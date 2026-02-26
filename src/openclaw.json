@@ -1,0 +1,13 @@
+{
+  "hooks": {
+    "internal": {
+      "enabled": true,
+      "handlers": [
+        {
+          "event": "message",
+          "module": "./hooks/bundled/telegram-logger/handler.js"
+        }
+      ]
+    }
+  }
+}
