@@ -8,12 +8,18 @@ import type { HookHandler } from "../../hooks.js";
 const log = createSubsystemLogger("telegram-logger");
 
 const logTelegram: HookHandler = async (event) => {
-  if (event.type !== "message") {
+  if (event.type !== "message" || event.action !== "received") {
     return;
   }
 
-  // Nur Telegram-Nachrichten loggen
-  if (event.context?.channelId !== "telegram") {
+  const ctx = event.context as {
+    from?: string;
+    content?: string;
+    channelId?: string;
+    conversationId?: string;
+  };
+
+  if (ctx.channelId !== "telegram") {
     return;
   }
 
@@ -26,8 +32,10 @@ const logTelegram: HookHandler = async (event) => {
     const logLine =
       JSON.stringify({
         timestamp: new Date().toISOString(),
-        sender: event.context?.senderId ?? "unknown",
-        channel: event.context?.channelId ?? "unknown",
+        from: ctx.from ?? "unknown",
+        content: ctx.content ?? "",
+        channel: ctx.channelId ?? "unknown",
+        conversationId: ctx.conversationId ?? "unknown",
       }) + "\n";
 
     await fs.appendFile(logFile, logLine, "utf-8");
