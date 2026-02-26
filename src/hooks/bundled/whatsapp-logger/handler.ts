@@ -8,7 +8,16 @@ import type { HookHandler } from "../../hooks.js";
 const log = createSubsystemLogger("whatsapp-logger");
 
 const logWhatsApp: HookHandler = async (event) => {
-  if (event.type !== "message") {
+  if (event.type !== "message" || event.action !== "received") {
+    return;
+  }
+
+  const ctx = event.context as {
+    from?: string;
+    channelId?: string;
+  };
+
+  if (ctx.channelId !== "whatsapp") {
     return;
   }
 
@@ -21,8 +30,8 @@ const logWhatsApp: HookHandler = async (event) => {
     const logLine =
       JSON.stringify({
         timestamp: new Date().toISOString(),
-        sender: event.context?.senderId ?? "unknown",
-        channel: event.context?.channelId ?? "unknown",
+        sender: ctx.from ?? "unknown",
+        channel: ctx.channelId ?? "unknown",
       }) + "\n";
 
     await fs.appendFile(logFile, logLine, "utf-8");
